@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
+import GameTable from '@/components/GameTable';
 
 const BG = 'https://cdn.poehali.dev/projects/5566614e-5100-4099-8a5c-1c35ad0e3eac/files/20b038a5-a031-4d7c-8e00-5b473bb85f14.jpg';
 
@@ -28,7 +29,7 @@ const PlayingCard = ({ suit, rank, delay = 0, className = '' }: { suit: string; 
   );
 };
 
-const Home = () => (
+const Home = ({ onPlay }: { onPlay: () => void }) => (
   <div className="animate-fade-in space-y-6">
     <div className="relative flex h-52 items-center justify-center">
       <div className="animate-float" style={{ ['--r' as string]: '-14deg' }}>
@@ -48,7 +49,7 @@ const Home = () => (
     </div>
 
     <div className="space-y-3">
-      <button className="group relative w-full overflow-hidden rounded-2xl gold-gradient py-5 glow-gold hover-lift">
+      <button onClick={onPlay} className="group relative w-full overflow-hidden rounded-2xl gold-gradient py-5 glow-gold hover-lift">
         <div className="flex items-center justify-center gap-3">
           <Icon name="Swords" className="text-primary-foreground" size={26} />
           <span className="font-display text-2xl font-bold uppercase tracking-wide text-primary-foreground">Быстрая игра</span>
@@ -57,7 +58,7 @@ const Home = () => (
       </button>
 
       <div className="grid grid-cols-2 gap-3">
-        <button className="glass rounded-2xl py-5 hover-lift">
+        <button onClick={onPlay} className="glass rounded-2xl py-5 hover-lift">
           <Icon name="Users" className="mx-auto mb-2 text-gold" size={26} />
           <span className="font-display text-base font-semibold uppercase tracking-wide">Играть с другом</span>
         </button>
@@ -215,6 +216,10 @@ const Settings = () => {
 
 const Index = () => {
   const [tab, setTab] = useState<Tab>('home');
+  const [playing, setPlaying] = useState(false);
+
+  if (playing) return <GameTable onExit={() => setPlaying(false)} />;
+
   return (
     <div className="min-h-screen w-full bg-felt">
       <div className="relative mx-auto flex min-h-screen max-w-md flex-col">
@@ -232,7 +237,7 @@ const Index = () => {
         </header>
 
         <main className="relative flex-1 px-5 py-4 pb-28">
-          {tab === 'home' && <Home />}
+          {tab === 'home' && <Home onPlay={() => setPlaying(true)} />}
           {tab === 'rating' && <Rating />}
           {tab === 'shop' && <Shop />}
           {tab === 'profile' && <Profile />}
