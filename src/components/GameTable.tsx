@@ -14,25 +14,44 @@ const DIFF_META: Record<Difficulty, { label: string; icon: string; mistake: numb
 
 const CardFace = ({ card, small, onClick, active, dim }: { card: Card; small?: boolean; onClick?: () => void; active?: boolean; dim?: boolean }) => {
   const red = isRed(card.suit);
-  const size = small ? 'h-16 w-11 text-sm' : 'h-24 w-16 text-lg';
+  const ink = red ? 'text-accent' : 'text-[#1a1a1a]';
+  const size = small ? 'h-32 w-[5.5rem]' : 'h-48 w-32';
+  const corner = small ? 'text-base' : 'text-2xl';
+  const pip = small ? 'text-4xl' : 'text-7xl';
   return (
     <button
       onClick={onClick}
       disabled={!onClick}
-      className={`animate-deal relative flex flex-col justify-between rounded-xl bg-[#faf6ea] p-1.5 shadow-xl ring-1 ring-black/10 transition-transform ${size} ${active ? 'ring-2 ring-[hsl(43_74%_52%)] -translate-y-3 glow-gold' : ''} ${onClick ? 'hover:-translate-y-2 cursor-pointer' : ''} ${dim ? 'opacity-40' : ''}`}
+      className={`animate-deal relative rounded-2xl bg-[#faf6ea] shadow-xl ring-1 ring-black/10 transition-transform ${size} ${active ? 'ring-2 ring-[hsl(43_74%_52%)] -translate-y-3 glow-gold' : ''} ${onClick ? 'hover:-translate-y-2 cursor-pointer' : ''} ${dim ? 'opacity-40' : ''}`}
     >
-      <span className={`font-display font-bold leading-none ${red ? 'text-accent' : 'text-[#1a1a1a]'}`}>{card.rank}<br />{card.suit}</span>
-      <span className={`self-end font-display font-bold leading-none ${red ? 'text-accent' : 'text-[#1a1a1a]'}`}>{card.suit}<br />{card.rank}</span>
+      <div className={`absolute left-2 top-2 flex flex-col items-center leading-none font-display font-bold ${corner} ${ink}`}>
+        <span>{card.rank}</span>
+        <span>{card.suit}</span>
+      </div>
+      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <span className={`font-display ${pip} ${ink} opacity-85`}>{card.suit}</span>
+      </div>
+      <div className={`absolute bottom-2 right-2 flex rotate-180 flex-col items-center leading-none font-display font-bold ${corner} ${ink}`}>
+        <span>{card.rank}</span>
+        <span>{card.suit}</span>
+      </div>
     </button>
   );
 };
 
 const CardBack = ({ small }: { small?: boolean }) => (
-  <div className={`relative flex flex-col items-center justify-between overflow-hidden rounded-xl bg-gradient-to-b from-[hsl(158_42%_20%)] to-[hsl(158_55%_8%)] shadow-xl ring-1 ring-gold/40 ${small ? 'h-16 w-11 py-1.5' : 'h-24 w-16 py-2.5'}`}>
-    <div className="pointer-events-none absolute inset-1 rounded-lg border border-gold/25" />
-    <Icon name="Crown" size={small ? 10 : 15} className="relative text-gold/85" />
-    <span className={`relative font-display font-bold text-gold/55 ${small ? 'text-[11px]' : 'text-lg'}`}>Д</span>
-    <span className={`relative block rounded-full bg-gold/15 ${small ? 'h-1.5 w-1.5' : 'h-2 w-2'}`} />
+  <div className={`relative flex flex-col items-center justify-between overflow-hidden rounded-2xl bg-gradient-to-b from-[hsl(158_42%_20%)] to-[hsl(158_55%_8%)] shadow-xl ring-2 ring-gold/40 ${small ? 'h-32 w-[5.5rem] py-3' : 'h-48 w-32 py-5'}`}>
+    <div className="pointer-events-none absolute inset-1.5 rounded-xl border border-gold/25" />
+    <div
+      className="pointer-events-none absolute inset-1.5 rounded-xl opacity-30"
+      style={{
+        backgroundImage:
+          'repeating-linear-gradient(45deg, hsla(43,74%,52%,0.5) 0, hsla(43,74%,52%,0.5) 1px, transparent 1px, transparent 10px), repeating-linear-gradient(-45deg, hsla(43,74%,52%,0.5) 0, hsla(43,74%,52%,0.5) 1px, transparent 1px, transparent 10px)',
+      }}
+    />
+    <Icon name="Crown" size={small ? 16 : 24} className="relative text-gold/85" />
+    <span className={`relative font-display font-bold text-gold/55 ${small ? 'text-base' : 'text-2xl'}`}>Д</span>
+    <span className={`relative block rounded-full bg-gold/15 ${small ? 'h-2.5 w-2.5' : 'h-3 w-3'}`} />
   </div>
 );
 
@@ -185,40 +204,39 @@ const GameTable = ({ onExit, difficulty = 'medium' }: { onExit: () => void; diff
         </div>
       </div>
 
-      <div className="relative flex flex-1 flex-col justify-between px-4 py-3">
+      <div className="relative flex flex-1 flex-col justify-between overflow-x-auto px-3 py-3">
         <div className="flex flex-col items-center gap-2">
           <div className="glass flex items-center gap-2 rounded-full px-4 py-1.5">
             <div className="flex h-7 w-7 items-center justify-center rounded-full gold-gradient text-xs font-bold text-primary-foreground">С</div>
             <span className="text-sm font-semibold">Соперник</span>
             <span className={`ml-1 h-2 w-2 rounded-full ${!myTurn ? 'bg-green-400 animate-pulse' : 'bg-foreground/30'}`} />
           </div>
-          <div className="flex -space-x-6">
+          <div className="flex -space-x-12">
             {opp.map((c) => <CardBack key={c.id} small />)}
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-6">
-          <div className="relative flex items-center gap-4">
-            {deck.length > 0 && (
-              <>
-                <div className="relative -rotate-[18deg] drop-shadow-[0_0_14px_hsla(43,74%,52%,0.5)]">
+        <div className="flex flex-1 items-center gap-3">
+          {deck.length > 0 && (
+            <div className="flex shrink-0 items-center">
+              <div className="relative h-32 w-48 shrink-0 drop-shadow-[0_0_16px_hsla(43,74%,52%,0.5)]">
+                <div className="absolute inset-0 flex items-center justify-center rotate-90">
                   <CardFace card={trumpCard} />
-                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full gold-gradient text-[10px] font-bold text-primary-foreground shadow ring-2 ring-background">★</span>
                 </div>
-                <div className="relative">
-                  <div className="absolute left-1 top-1"><CardBack /></div>
-                  <div className="relative"><CardBack /></div>
-                  <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-display text-sm font-bold text-gold">{deck.length}</span>
-                </div>
-              </>
-            )}
-          </div>
-          <div className="flex min-h-[6rem] flex-wrap items-center justify-center gap-1">
+              </div>
+              <div className="relative -ml-[3.6rem] z-10">
+                <div className="absolute left-1.5 top-1.5"><CardBack /></div>
+                <div className="relative"><CardBack /></div>
+                <span className="absolute -bottom-7 left-1/2 -translate-x-1/2 whitespace-nowrap font-display text-sm font-bold text-gold">{deck.length} карт</span>
+              </div>
+            </div>
+          )}
+          <div className="flex min-h-[9rem] flex-1 flex-wrap items-center justify-center gap-2">
             {table.map((p, i) => (
               <div key={i} className="relative">
                 <CardFace card={p.attack} />
                 {p.defend && (
-                  <div className="absolute left-3 top-4 rotate-12">
+                  <div className="absolute left-5 top-6 rotate-12">
                     <CardFace card={p.defend} />
                   </div>
                 )}
@@ -240,7 +258,7 @@ const GameTable = ({ onExit, difficulty = 'medium' }: { onExit: () => void; diff
             </div>
           )}
 
-          <div className="flex flex-wrap justify-center gap-1 px-2">
+          <div className="flex max-w-full items-end overflow-x-auto px-2 pb-1 [&>*]:-ml-10 [&>*:first-child]:ml-0">
             {sortHand(me).map((c) => {
               const playable = myTurn && (undefended ? beats(undefended.attack, c, trump) : !undefended && (table.length === 0 || tableRanks.includes(c.rank)));
               return (
