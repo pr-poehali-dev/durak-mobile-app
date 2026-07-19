@@ -28,8 +28,11 @@ const CardFace = ({ card, small, onClick, active, dim }: { card: Card; small?: b
 };
 
 const CardBack = ({ small }: { small?: boolean }) => (
-  <div className={`rounded-xl bg-gradient-to-br from-[hsl(158_40%_20%)] to-[hsl(158_50%_10%)] shadow-xl ring-1 ring-[hsl(43_74%_52%)]/30 ${small ? 'h-16 w-11' : 'h-24 w-16'} flex items-center justify-center`}>
-    <span className="font-display text-2xl text-gold/50">Д</span>
+  <div className={`relative flex flex-col items-center justify-between overflow-hidden rounded-xl bg-gradient-to-b from-[hsl(158_42%_20%)] to-[hsl(158_55%_8%)] shadow-xl ring-1 ring-gold/40 ${small ? 'h-16 w-11 py-1.5' : 'h-24 w-16 py-2.5'}`}>
+    <div className="pointer-events-none absolute inset-1 rounded-lg border border-gold/25" />
+    <Icon name="Crown" size={small ? 10 : 15} className="relative text-gold/85" />
+    <span className={`relative font-display font-bold text-gold/55 ${small ? 'text-[11px]' : 'text-lg'}`}>Д</span>
+    <span className={`relative block rounded-full bg-gold/15 ${small ? 'h-1.5 w-1.5' : 'h-2 w-2'}`} />
   </div>
 );
 
@@ -195,14 +198,18 @@ const GameTable = ({ onExit, difficulty = 'medium' }: { onExit: () => void; diff
         </div>
 
         <div className="flex items-center justify-center gap-6">
-          <div className="relative flex items-center">
+          <div className="relative flex items-center gap-4">
             {deck.length > 0 && (
               <>
-                <div className="absolute -left-2 rotate-90">
+                <div className="relative -rotate-[18deg] drop-shadow-[0_0_14px_hsla(43,74%,52%,0.5)]">
                   <CardFace card={trumpCard} />
+                  <span className="absolute -right-2 -top-2 flex h-5 w-5 items-center justify-center rounded-full gold-gradient text-[10px] font-bold text-primary-foreground shadow ring-2 ring-background">★</span>
                 </div>
-                <div className="relative z-10"><CardBack /></div>
-                <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-display text-sm font-bold text-gold">{deck.length}</span>
+                <div className="relative">
+                  <div className="absolute left-1 top-1"><CardBack /></div>
+                  <div className="relative"><CardBack /></div>
+                  <span className="absolute -bottom-6 left-1/2 -translate-x-1/2 font-display text-sm font-bold text-gold">{deck.length}</span>
+                </div>
               </>
             )}
           </div>
