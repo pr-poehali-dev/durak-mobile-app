@@ -1,6 +1,9 @@
 import { useState, useMemo } from 'react';
 import Icon from '@/components/ui/icon';
 import { Card, Suit, buildDeck, isRed, beats, canDefend, rankValue } from '@/lib/durak';
+import kingImg from '@/assets/cards/king.png';
+import queenImg from '@/assets/cards/queen.png';
+import jackImg from '@/assets/cards/jack.png';
 
 const BG = 'https://cdn.poehali.dev/projects/5566614e-5100-4099-8a5c-1c35ad0e3eac/files/20b038a5-a031-4d7c-8e00-5b473bb85f14.jpg';
 
@@ -39,19 +42,19 @@ const PIP_LAYOUT: Record<string, [number, number, boolean][]> = {
     [25, 88, true], [75, 88, true],
   ],
   '10': [
-    [25, 11, false], [75, 11, false],
-    [50, 24, false],
-    [25, 38, false], [75, 38, false],
-    [25, 62, true], [75, 62, true],
-    [50, 76, true],
-    [25, 89, true], [75, 89, true],
+    [30, 17, false], [70, 17, false],
+    [50, 30, false],
+    [30, 43, false], [70, 43, false],
+    [30, 57, true], [70, 57, true],
+    [50, 70, true],
+    [30, 83, true], [70, 83, true],
   ],
 };
 
-const FACE_META: Record<string, { icon: string; label: string }> = {
-  'В': { icon: 'Sword', label: 'Валет' },
-  'Д': { icon: 'Gem', label: 'Дама' },
-  'К': { icon: 'Crown', label: 'Король' },
+const FACE_META: Record<string, { img: string; label: string }> = {
+  'В': { img: jackImg, label: 'Валет' },
+  'Д': { img: queenImg, label: 'Дама' },
+  'К': { img: kingImg, label: 'Король' },
 };
 
 const CardFace = ({ card, small, onClick, active, dim }: { card: Card; small?: boolean; onClick?: () => void; active?: boolean; dim?: boolean }) => {
@@ -60,7 +63,7 @@ const CardFace = ({ card, small, onClick, active, dim }: { card: Card; small?: b
   const size = small ? 'h-32 w-[5.5rem]' : 'h-48 w-32';
   const corner = small ? 'text-base' : 'text-2xl';
   const pip = small ? 'text-4xl' : 'text-7xl';
-  const smallPip = small ? 'text-lg' : 'text-3xl';
+  const smallPip = small ? 'text-sm' : 'text-2xl';
   const layout = PIP_LAYOUT[card.rank];
   const face = FACE_META[card.rank];
 
@@ -88,8 +91,20 @@ const CardFace = ({ card, small, onClick, active, dim }: { card: Card; small?: b
           ))}
         </div>
       ) : face ? (
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
-          <Icon name={face.icon} size={small ? 34 : 56} className={ink} strokeWidth={2} />
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 px-3">
+          <div
+            className={`${red ? 'bg-accent' : 'bg-[#1a1a1a]'} opacity-90 ${small ? 'h-16 w-16' : 'h-28 w-28'}`}
+            style={{
+              WebkitMaskImage: `url(${face.img})`,
+              maskImage: `url(${face.img})`,
+              WebkitMaskSize: 'contain',
+              maskSize: 'contain',
+              WebkitMaskRepeat: 'no-repeat',
+              maskRepeat: 'no-repeat',
+              WebkitMaskPosition: 'center',
+              maskPosition: 'center',
+            }}
+          />
           <span className={`font-display font-bold ${ink} ${small ? 'text-[10px]' : 'text-xs'} tracking-wide opacity-70`}>{face.label}</span>
         </div>
       ) : (
@@ -216,14 +231,15 @@ const GameTable = ({ onExit, difficulty = 'medium' }: { onExit: () => void; diff
     const newMe = me.filter((c) => c.id !== card.id);
     setMe(newMe);
     setTable(table.map((p) => (p === undefended ? { ...p, defend: card } : p)));
-    setMsg('Отбито! Ход соперника');
-    setMyTurn(false);
+    setMsg('Отбито! Вы отбились — теперь ваш ход атаковать');
     setTimeout(() => {
       const { nd, m, o } = refill(deck, newMe, opp);
       setDeck(nd);
       setMe(m);
+      setOpp(o);
       setTable([]);
-      oppTurn(nd, m, o);
+      setMyTurn(true);
+      setMsg('Ваш ход — выберите карту для атаки');
     }, 700);
   };
 
