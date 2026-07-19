@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import Icon from '@/components/ui/icon';
-import GameTable from '@/components/GameTable';
+import GameTable, { Difficulty } from '@/components/GameTable';
 
 const BG = 'https://cdn.poehali.dev/projects/5566614e-5100-4099-8a5c-1c35ad0e3eac/files/20b038a5-a031-4d7c-8e00-5b473bb85f14.jpg';
 
@@ -29,7 +29,7 @@ const PlayingCard = ({ suit, rank, delay = 0, className = '' }: { suit: string; 
   );
 };
 
-const Home = ({ onPlay }: { onPlay: () => void }) => (
+const Home = ({ onPlay, onPlayBot }: { onPlay: () => void; onPlayBot: () => void }) => (
   <div className="animate-fade-in space-y-6">
     <div className="relative flex h-52 items-center justify-center">
       <div className="animate-float" style={{ ['--r' as string]: '-14deg' }}>
@@ -67,6 +67,13 @@ const Home = ({ onPlay }: { onPlay: () => void }) => (
           <span className="font-display text-base font-semibold uppercase tracking-wide">Турниры</span>
         </button>
       </div>
+
+      <button onClick={onPlayBot} className="w-full rounded-2xl border border-dashed border-gold/40 bg-secondary/40 py-4 hover-lift">
+        <div className="flex items-center justify-center gap-2.5">
+          <Icon name="Bot" className="text-gold" size={22} />
+          <span className="font-display text-base font-semibold uppercase tracking-wide">Играть с компьютером</span>
+        </div>
+      </button>
     </div>
 
     <div className="glass flex items-center justify-between rounded-2xl px-5 py-4">
@@ -214,11 +221,19 @@ const Settings = () => {
   );
 };
 
+const DIFFICULTIES: { id: Difficulty; label: string; icon: string; desc: string }[] = [
+  { id: 'easy', label: 'Лёгкий', icon: 'Smile', desc: 'Бот часто ошибается' },
+  { id: 'medium', label: 'Средний', icon: 'Brain', desc: 'Играет осмысленно' },
+  { id: 'hard', label: 'Сложный', icon: 'Skull', desc: 'Бот не прощает ошибок' },
+];
+
 const Index = () => {
   const [tab, setTab] = useState<Tab>('home');
   const [playing, setPlaying] = useState(false);
+  const [pickDiff, setPickDiff] = useState(false);
+  const [difficulty, setDifficulty] = useState<Difficulty>('medium');
 
-  if (playing) return <GameTable onExit={() => setPlaying(false)} />;
+  if (playing) return <GameTable onExit={() => setPlaying(false)} difficulty={difficulty} />;
 
   return (
     <div className="min-h-screen w-full bg-felt">
@@ -237,7 +252,7 @@ const Index = () => {
         </header>
 
         <main className="relative flex-1 px-5 py-4 pb-28">
-          {tab === 'home' && <Home onPlay={() => setPlaying(true)} />}
+          {tab === 'home' && <Home onPlay={() => setPlaying(true)} onPlayBot={() => setPickDiff(true)} />}
           {tab === 'rating' && <Rating />}
           {tab === 'shop' && <Shop />}
           {tab === 'profile' && <Profile />}
@@ -259,6 +274,38 @@ const Index = () => {
             })}
           </div>
         </nav>
+
+        {pickDiff && (
+          <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/60 backdrop-blur-sm animate-fade-in sm:items-center" onClick={() => setPickDiff(false)}>
+            <div className="glass w-full max-w-md rounded-t-3xl p-6 sm:rounded-3xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+              <h3 className="mb-1 text-center font-display text-2xl font-bold uppercase text-gold">Выбери соперника</h3>
+              <p className="mb-5 text-center text-sm text-foreground/60">Уровень сложности компьютера</p>
+              <div className="space-y-3">
+                {DIFFICULTIES.map((d) => (
+                  <button
+                    key={d.id}
+                    onClick={() => {
+                      setDifficulty(d.id);
+                      setPickDiff(false);
+                      setPlaying(true);
+                    }}
+                    className="flex w-full items-center gap-4 rounded-2xl bg-secondary/50 px-4 py-3.5 text-left hover-lift"
+                  >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl gold-gradient">
+                      <Icon name={d.icon} className="text-primary-foreground" size={22} />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-display text-lg font-semibold uppercase">{d.label}</p>
+                      <p className="text-xs text-foreground/60">{d.desc}</p>
+                    </div>
+                    <Icon name="ChevronRight" className="text-foreground/40" size={18} />
+                  </button>
+                ))}
+              </div>
+              <button onClick={() => setPickDiff(false)} className="mt-4 w-full rounded-xl py-2.5 text-sm font-medium text-foreground/50">Отмена</button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

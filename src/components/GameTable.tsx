@@ -4,6 +4,14 @@ import { Card, Suit, buildDeck, isRed, beats, canDefend, rankValue } from '@/lib
 
 const BG = 'https://cdn.poehali.dev/projects/5566614e-5100-4099-8a5c-1c35ad0e3eac/files/20b038a5-a031-4d7c-8e00-5b473bb85f14.jpg';
 
+export type Difficulty = 'easy' | 'medium' | 'hard';
+
+const DIFF_META: Record<Difficulty, { label: string; icon: string; mistake: number; think: number }> = {
+  easy: { label: 'Лёгкий', icon: 'Smile', mistake: 0.45, think: 450 },
+  medium: { label: 'Средний', icon: 'Brain', mistake: 0.12, think: 750 },
+  hard: { label: 'Сложный', icon: 'Skull', mistake: 0, think: 1000 },
+};
+
 const CardFace = ({ card, small, onClick, active, dim }: { card: Card; small?: boolean; onClick?: () => void; active?: boolean; dim?: boolean }) => {
   const red = isRed(card.suit);
   const size = small ? 'h-16 w-11 text-sm' : 'h-24 w-16 text-lg';
@@ -31,7 +39,8 @@ const deal = (deck: Card[], hand: Card[], n: number) => {
   return { deck: deck.slice(need), hand: [...hand, ...drawn] };
 };
 
-const GameTable = ({ onExit }: { onExit: () => void }) => {
+const GameTable = ({ onExit, difficulty = 'medium' }: { onExit: () => void; difficulty?: Difficulty }) => {
+  const diff = DIFF_META[difficulty];
   const init = useMemo(() => {
     const full = buildDeck();
     const trumpCard = full[full.length - 1];
@@ -76,7 +85,7 @@ const GameTable = ({ onExit }: { onExit: () => void }) => {
       setOpp(curOpp.filter((c) => c.id !== attack.id));
       setMyTurn(true);
       setMsg('Соперник атакует — отбейтесь или возьмите');
-    }, 700);
+    }, diff.think);
   };
 
   const playAttack = (card: Card) => {
@@ -87,7 +96,9 @@ const GameTable = ({ onExit }: { onExit: () => void }) => {
     setMsg('Соперник отбивается...');
     setMyTurn(false);
     setTimeout(() => {
-      const def = canDefend(card, opp, trump);
+      const realDef = canDefend(card, opp, trump);
+      const missPlay = realDef && Math.random() < diff.mistake;
+      const def = missPlay ? undefined : realDef;
       if (def) {
         setOpp((o) => o.filter((c) => c.id !== def.id));
         setTable((t) => t.map((p) => (p.attack.id === card.id ? { ...p, defend: def } : p)));
@@ -104,7 +115,7 @@ const GameTable = ({ onExit }: { onExit: () => void }) => {
         setMsg('Соперник забрал карты! Ваш ход');
         setMyTurn(true);
       }
-    }, 800);
+    }, diff.think);
   };
 
   const defend = (card: Card) => {
@@ -160,8 +171,14 @@ const GameTable = ({ onExit }: { onExit: () => void }) => {
           <Icon name="ChevronLeft" size={18} />
           <span className="text-sm font-medium">Выход</span>
         </button>
-        <div className="glass rounded-full px-4 py-1.5 text-sm font-medium">
-          Козырь: <span className="text-gold font-bold">{trump}</span>
+        <div className="flex items-center gap-2">
+          <div className="glass flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium text-foreground/80">
+            <Icon name={diff.icon} size={14} className="text-gold" />
+            {diff.label}
+          </div>
+          <div className="glass rounded-full px-4 py-1.5 text-sm font-medium">
+            Козырь: <span className="text-gold font-bold">{trump}</span>
+          </div>
         </div>
       </div>
 
