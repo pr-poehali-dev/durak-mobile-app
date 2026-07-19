@@ -12,12 +12,58 @@ const DIFF_META: Record<Difficulty, { label: string; icon: string; mistake: numb
   hard: { label: 'Сложный', icon: 'Skull', mistake: 0, think: 1000 },
 };
 
+const PIP_LAYOUT: Record<string, [number, number, boolean][]> = {
+  '6': [
+    [25, 18, false], [75, 18, false],
+    [25, 50, false], [75, 50, false],
+    [25, 82, true], [75, 82, true],
+  ],
+  '7': [
+    [25, 15, false], [75, 15, false],
+    [50, 32, false],
+    [25, 50, false], [75, 50, false],
+    [25, 85, true], [75, 85, true],
+  ],
+  '8': [
+    [25, 13, false], [75, 13, false],
+    [50, 30, false],
+    [25, 50, false], [75, 50, false],
+    [50, 70, true],
+    [25, 87, true], [75, 87, true],
+  ],
+  '9': [
+    [25, 12, false], [75, 12, false],
+    [25, 37, false], [75, 37, false],
+    [50, 50, false],
+    [25, 63, true], [75, 63, true],
+    [25, 88, true], [75, 88, true],
+  ],
+  '10': [
+    [25, 11, false], [75, 11, false],
+    [50, 24, false],
+    [25, 38, false], [75, 38, false],
+    [25, 62, true], [75, 62, true],
+    [50, 76, true],
+    [25, 89, true], [75, 89, true],
+  ],
+};
+
+const FACE_META: Record<string, { icon: string; label: string }> = {
+  'В': { icon: 'Sword', label: 'Валет' },
+  'Д': { icon: 'Gem', label: 'Дама' },
+  'К': { icon: 'Crown', label: 'Король' },
+};
+
 const CardFace = ({ card, small, onClick, active, dim }: { card: Card; small?: boolean; onClick?: () => void; active?: boolean; dim?: boolean }) => {
   const red = isRed(card.suit);
   const ink = red ? 'text-accent' : 'text-[#1a1a1a]';
   const size = small ? 'h-32 w-[5.5rem]' : 'h-48 w-32';
   const corner = small ? 'text-base' : 'text-2xl';
   const pip = small ? 'text-4xl' : 'text-7xl';
+  const smallPip = small ? 'text-lg' : 'text-3xl';
+  const layout = PIP_LAYOUT[card.rank];
+  const face = FACE_META[card.rank];
+
   return (
     <button
       onClick={onClick}
@@ -28,9 +74,30 @@ const CardFace = ({ card, small, onClick, active, dim }: { card: Card; small?: b
         <span>{card.rank}</span>
         <span>{card.suit}</span>
       </div>
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-        <span className={`font-display ${pip} ${ink} opacity-85`}>{card.suit}</span>
-      </div>
+
+      {layout ? (
+        <div className="pointer-events-none absolute inset-0">
+          {layout.map(([x, y, flip], i) => (
+            <span
+              key={i}
+              className={`absolute font-display ${smallPip} ${ink} ${flip ? 'rotate-180' : ''}`}
+              style={{ left: `${x}%`, top: `${y}%`, transform: `translate(-50%, -50%) ${flip ? 'rotate(180deg)' : ''}` }}
+            >
+              {card.suit}
+            </span>
+          ))}
+        </div>
+      ) : face ? (
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1">
+          <Icon name={face.icon} size={small ? 34 : 56} className={ink} strokeWidth={2} />
+          <span className={`font-display font-bold ${ink} ${small ? 'text-[10px]' : 'text-xs'} tracking-wide opacity-70`}>{face.label}</span>
+        </div>
+      ) : (
+        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+          <span className={`font-display ${pip} ${ink} opacity-85`}>{card.suit}</span>
+        </div>
+      )}
+
       <div className={`absolute bottom-2 right-2 flex rotate-180 flex-col items-center leading-none font-display font-bold ${corner} ${ink}`}>
         <span>{card.rank}</span>
         <span>{card.suit}</span>
